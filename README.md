@@ -80,3 +80,11 @@ This becomes the set of line descriptions for the centreline defined glyph.
 It is at this point that the footprint needs to be converted to a gEDA PCB compatible font symbol.....
 
 To be continued...
+
+TODO:
+
+sort out the occasional error with bezier segment stitching, which manifests as a join between bezier segments jumping to the origin (0,0).
+
+automatic censoring of overlaid paths from each side of the limb
+
+distinguishing between, and processing accordingly, glyphs with and without internal contours
