@@ -288,9 +288,16 @@ public class Quadratic extends OutlineElement {
     for (int index = 1; index < (initialSegments.length - 1); index++) {
       Line previous = offsetLines[index-1];
       Line current = offsetLines[index];
-      Point intersection = previous.intersectsAt(current);
-      offsetLines[index-1].endPoint = new Point(intersection);
-      offsetLines[index].startPoint = new Point(intersection);
+      Line spanLine
+          = new Line(previous.end(),
+                     current.start());
+      if (spanLine.length() >= 1) { // consecutive lines not joined
+        Point intersection // consecutive bezier segments with gap
+            = spanLine.midPoint();
+        //Point intersection = previous.intersectsAt(current);
+        offsetLines[index-1].endPoint = new Point(intersection);
+        offsetLines[index].startPoint = new Point(intersection);
+      }
     }
     return offsetLines;
   }
