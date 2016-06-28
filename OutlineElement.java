@@ -565,16 +565,21 @@ public class OutlineElement {
 
 
   public static double direction(Point first, Point last) {
+    /*
     Line unitVector = new Line(0,0,1,0);
     Line b = new Line(first, last);
     Double calculatedTheta = Math.acos(cosTheta(b, unitVector));
-        long deltaY = last.getY() - first.getY();
+    */
+    long deltaX = last.getX() - first.getX();
+    long deltaY = last.getY() - first.getY();
+    /*
     double finalDir = calculatedTheta;
     if (deltaY < 0) {
       finalDir = Math.PI*2-calculatedTheta;
       // could do (0 - calculatedTheta), hmmm
     }
-    return finalDir;
+    */
+    return Math.atan2(deltaY, deltaX); //finalDir;
   } 
 
   public static double direction(Line theLine) {

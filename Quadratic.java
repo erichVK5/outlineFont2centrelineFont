@@ -94,13 +94,43 @@ public class Quadratic extends OutlineElement {
   }
 
   public double deltaTheta() {
+
+    double end = endDirection();
+    double start = startDirection();
+    if (end == -Math.PI) {
+      end = Math.PI;
+    }
+    if (start == -Math.PI) {
+      start = Math.PI;
+    }
+    if ((end == Math.PI)
+        && (start < 0)) {
+      return (-1.0*end - start);
+    } else if ((start == Math.PI)
+        && (end < 0)) {
+      return (end + start);
+    } else {
+      return end - start;
+    }
+
     /*theta = endDirection() - startDirection();
     System.out.println("__Quadratic delta theta:" + theta);
     //return theta; */
 
+/*
     Line vector1 = new Line(startPoint, controlPointOne);
     Line vector2 = new Line(controlPointOne, endPoint);
-    Double calculatedTheta = Math.acos(cosTheta(vector1, vector2));
+    double calculatedTheta = Math.acos(cosTheta(vector1, vector2));
+
+    double finalDir = startDirection() + calculatedTheta;
+    if (finalDir > Math.PI) {
+      finalDir = 0.0 - (2*Math.PI - finalDir);
+    } else if (finalDir < (-Math.PI)) {
+      finalDir = 0.0 - (-2*Math.PI - finalDir);
+    }  
+    return finalDir;
+/*
+    /*
     theta = Math.PI - calculatedTheta;
     //System.out.println("__New quadratic delta theta:" + theta);
     if (((direction(vector2) - direction(vector1)) > Math.PI)
@@ -111,6 +141,8 @@ public class Quadratic extends OutlineElement {
       //System.out.println("__returning :" + (theta));
       return theta;
     }
+    */
+
   }
 
   public double crudeLength() {
@@ -178,7 +210,7 @@ public class Quadratic extends OutlineElement {
     //System.out.println("__LECthickness : " + thickness);
     //System.out.println("__LECapproxRadius() : " + approxRadius());
     if ((deltaTheta()*pathDir > 0)
-        && (spanningLine().length() < thickness)) {
+        && (spanningLine().length() < 0.5*thickness)) {
         /*   if ( ((maximumX() - minimumX()) < thickness)
         && ((maximumY() - minimumY()) < thickness )
          || (deltaTheta() < 0) */

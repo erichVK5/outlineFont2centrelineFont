@@ -249,7 +249,7 @@ public class Path {
         Point intersectionB // consecutive beziers with gap
             = spanLine.midPoint();
         if (tempLines.get(tempLines.size()-1).isBezierSegment()
-            && tempLines.get(tempLines.size()-1).isBezierSegment()
+            && tempLines.get(0).isBezierSegment()
             && spanLine.length() < limbThickness ) {
           Point newEndPoint = new Point(intersectionB);
           Point newStartPoint = new Point(intersectionB);
@@ -357,7 +357,7 @@ public class Path {
     ArrayList<OutlineElement> newElements
         = new ArrayList<OutlineElement>();
     for (OutlineElement el : elements) {
-      if (!el.likelyEndCap(limbWidth, pathDirection())) {
+      if (!el.likelyEndCap(limbWidth, originalDirection())) {
         newElements.add(el.copyOf()); // create a copy
       }
     }
