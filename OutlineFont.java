@@ -53,7 +53,7 @@ public class OutlineFont {
   public double gEDAScaling() {
     double retval = 1.0;
     if ((fontAscent > 0) || (fontDescent < 0)) {
-      retval = 6333.0/(fontAscent - fontDescent);
+      retval = 6333.0/(fontAscent + fontDescent); // not minus
       // PCB fonts are about 6333 high, offset +1000 to the right,
       // and sit at ~ 1000 Y 
     }
