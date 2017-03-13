@@ -15,6 +15,7 @@ public class OutlineFont2centrelineFont {
     long nextX = 0;
     long nextY = 0;
     long polyYoffset = 0;
+    boolean legacy = false;
     Line test;
     Line offset;
     Line tempOffset;
@@ -127,6 +128,8 @@ public class OutlineFont2centrelineFont {
     //...
     String totalSVG = "";
     //..
+
+    int pathCount = 0; 
 
     while (svg.hasNextLine()) {
       currentLine = svg.nextLine();
@@ -257,8 +260,10 @@ public class OutlineFont2centrelineFont {
             + "###\n";
       } else {
           workingPathOutput
-            = workingPathOutput
-            + workingPath.toGEDAPolygon(magnification, polyYoffset);
+            = workingPathOutput + "     li:simplepoly." + j + " {\n"
+            + workingPath.toGEDAPolygon(magnification, polyYoffset, false)
+	    + "     }\n";
+	  pathCount++;
       }
     }
 
@@ -312,14 +317,16 @@ public class OutlineFont2centrelineFont {
               + "###\n";
         } else {
             workingPathOutput
-              = workingPathOutput
-              + workingPath.toGEDAPolygon(magnification, polyYoffset);
+              = workingPathOutput + "     li:simplepoly." + pathCount + " {\n"
+              + workingPath.toGEDAPolygon(magnification, polyYoffset, false)
+	      + "     }\n";
+            pathCount++;
         }
       }
     }
 
 
-    String finalOutput = outputHeader + workingPathOutput;
+    String finalOutput = workingPathOutput;
 
 
     for (int k = 10; k < glyphPaths.size(); k++) {
@@ -339,7 +346,7 @@ public class OutlineFont2centrelineFont {
 
       if (exportPolygons) {
 	Path polygonalPath = glyphPaths.get(k);
-	output = output + polygonalPath.toGEDAPolygon(magnification, polyYoffset);
+	output = output + polygonalPath.toGEDAPolygon(magnification, polyYoffset, legacy);
       }
 
       OLP4 = new OutlineParser();
@@ -510,7 +517,18 @@ public class OutlineFont2centrelineFont {
       
     }
 
-    finalOutput = finalOutput + ")\n";
+    if (!exportPolygons) {
+      finalOutput = outputHeader + finalOutput + ")\n";
+    } else if (!legacy) {
+      finalOutput = "   ha:"
+		+ theGlyph.glyphName()
+		+ " {\n"
+		+ "    width=50.0mil; delta=12.0mil;\n"
+    		+ "    li:objects {\n"
+		+ finalOutput 
+		+ "    height = 63.33mil\n"
+		+ "   }\n";
+    }
 
     if (suppressSmallVerticals) {
       System.out.println("suppressing small verticals");
@@ -528,15 +546,22 @@ public class OutlineFont2centrelineFont {
     output = output + ")\n";
     */
 
-    File out
-        = new File(theGlyph.glyphName()
+    String fpName = theGlyph.glyphName()
                    + "-hadvx"
                    + theGlyph.horizAdvance()
                    + "-asc"
                    + theGlyph.ascent()
                    + "-desc"
-                   + theGlyph.descent()
-                   + ".fp");
+                   + theGlyph.descent();
+
+    if (exportPolygons && !legacy) {
+	fpName = fpName + ".lht";
+    } else {
+	fpName = fpName + ".fp";
+    }
+
+    File out = new File(fpName);
+
     PrintWriter fp = new PrintWriter(out);
 
     fp.println(finalOutput);

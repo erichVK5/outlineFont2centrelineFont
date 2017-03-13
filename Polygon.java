@@ -120,26 +120,39 @@ public class Polygon extends OutlineElement {
   }
 
   public String toGEDAPolygon() {
-    return toGEDAPolygon(1.0, 0);
+    return toGEDAPolygon(1.0, 0, true);
   }
 
-  public String toGEDAPolygon(double magnification, long yOffset) {
+  public String toGEDAPolygon(double magnification, long yOffset, boolean legacy) {
     System.out.println("converting Polygon object to gEDA polygon definition.");
     int nVertices = pointList.size();
-    String retPolygon = "\tPolygon()\n\t(\n\t\t";
-    for (int i = 0; i < (nVertices); i++) {
-	    retPolygon = retPolygon
+    if (legacy) {
+      String retPolygon = "\tPolygon(\"clearpoly\")\n\t(\n\t\t";
+      for (int i = 0; i < (nVertices); i++) {
+  	    retPolygon = retPolygon
                + "[" + (long)(pointList.get(i).getX()*magnification) + " "
-	       +  (long)(yOffset-pointList.get(i).getY()*magnification) + "]";
-	if (i != (nVertices - 1) && ((i+1)%5 != 0)) {
-	    retPolygon = retPolygon + " ";
-        } else if (i != (nVertices - 1) && ((i+1)%5 == 0)) {
-            retPolygon = retPolygon + "\n\t\t";
-	} else {
-	    retPolygon = retPolygon + "\n\t)\n";
-        }
+  	       +  (long)(yOffset-pointList.get(i).getY()*magnification) + "]";
+  	if (i != (nVertices - 1) && ((i+1)%5 != 0)) {
+  	    retPolygon = retPolygon + " ";
+          } else if (i != (nVertices - 1) && ((i+1)%5 == 0)) {
+              retPolygon = retPolygon + "\n\t\t";
+  	} else {
+  	    retPolygon = retPolygon + "\n\t)\n";
+          }
+      }
+      return retPolygon;
+    } else {
+      String retPolygon = "";
+      for (int i = 0; i < (nVertices); i++) {
+	    long xCoord = (long)(pointList.get(i).getX()*magnification);
+	    long yCoord = (long)(yOffset-pointList.get(i).getY()*magnification); 
+            retPolygon = retPolygon
+               + "       "
+               + xCoord/100.0 + "mil; "
+               + yCoord/100.0 + "mil\n";
+      }
+      return retPolygon;
     }
-    return retPolygon;
   }
 
 }
