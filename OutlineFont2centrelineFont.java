@@ -14,6 +14,7 @@ public class OutlineFont2centrelineFont {
     long currentY = 0;
     long nextX = 0;
     long nextY = 0;
+    long polyYoffset = 0;
     Line test;
     Line offset;
     Line tempOffset;
@@ -37,6 +38,8 @@ public class OutlineFont2centrelineFont {
     boolean centreLine = false;
     boolean outerPathsOnly = false;
     boolean innerPathsOnly = false;
+    boolean preserveCollinears = false;
+    boolean exportPolygons = false;
 
     String fontAscent = ""; // integer value not actually used for now
     String fontDescent = ""; // integer value not actually used for now
@@ -64,11 +67,14 @@ public class OutlineFont2centrelineFont {
       } else if (args[index].equals("-w")) { //limb width
         limbWidth = Integer.parseInt(args[index+1]);
         index++; // default 70 for now
-      } else if (args[index].equals("-l")) { //limb width
+      } else if (args[index].equals("-l")) { //first glyph
         firstGlyph = Integer.parseInt(args[index+1]);
-        index++; // default 70 for now
-      } else if (args[index].equals("-h")) { //limb width
+        index++;
+      } else if (args[index].equals("-f")) { //last glyph
         lastGlyph = Integer.parseInt(args[index+1]);
+        index++; 
+      } else if (args[index].equals("-h")) {
+        System.out.println("Help goes here:");
         index++; // default 70 for now
       } else if (args[index].equals("-cl")) { //plot centreline
         centreLine = true;
@@ -92,6 +98,8 @@ public class OutlineFont2centrelineFont {
         outerPathsOnly = true;
       } else if (args[index].equals("-ip")) { // inner paths only
         innerPathsOnly = true;
+      } else if (args[index].equals("-pc")) { // preserve collinear lines 
+        preserveCollinears = true;
       } else if (args[index].equals("-nm")) { //no auto magnification
         autoMagnify = false;
       } else if (args[index].equals("-p")) { // glyph path number to do
@@ -99,6 +107,11 @@ public class OutlineFont2centrelineFont {
         index++;                            // paths in glyph def
       } else if (args[index].equals("-gt")) { // try to figure out
         guessThickness = true; // limb thickness by analysing glyphs
+      } else if (args[index].equals("-ep")) { // export polygons
+        exportPolygons = true;
+        polyYoffset = Integer.parseInt(args[index+1]);
+	index++;
+	System.out.println("Exporting polygons only.");
       }
     }
     if (filename.equals("")) {
@@ -227,18 +240,26 @@ public class OutlineFont2centrelineFont {
         finalPath
             = workingPath.stitchCloseSequentialLines(2*limbWidth/3);
         workingPath = finalPath;
-        finalPath
-            = workingPath.censorDuplicateCollinearLines(limbWidth);
-        workingPath = finalPath;
+        if (!preserveCollinears) {
+          finalPath
+              = workingPath.censorDuplicateCollinearLines(limbWidth);
+          workingPath = finalPath;
+        }
       }
 
-      workingPathOutput
-          = workingPathOutput
-          + workingPath.toGEDAElementLines(limbWidth,
+      if (!exportPolygons) {
+          workingPathOutput
+            = workingPathOutput
+            + workingPath.toGEDAElementLines(limbWidth,
                                            magnification,
                                            true, // skip redundant
                                            false) // skip beziers
-          + "###\n";
+            + "###\n";
+      } else {
+          workingPathOutput
+            = workingPathOutput
+            + workingPath.toGEDAPolygon(magnification, polyYoffset);
+      }
     }
 
     if (!outerPathsOnly) {
@@ -274,18 +295,26 @@ public class OutlineFont2centrelineFont {
           finalPath
               = workingPath.stitchCloseSequentialLines(2*limbWidth/3);
           workingPath = finalPath;
-          finalPath
-              = workingPath.censorDuplicateCollinearLines(limbWidth);
-          workingPath = finalPath;
+          if (!preserveCollinears) {
+            finalPath
+                = workingPath.censorDuplicateCollinearLines(limbWidth);
+            workingPath = finalPath;
+          }
         }
         
-        workingPathOutput
-            = workingPathOutput
-            + workingPath.toGEDAElementLines(limbWidth,
+        if (!exportPolygons) {
+            workingPathOutput
+              = workingPathOutput
+              + workingPath.toGEDAElementLines(limbWidth,
                                              magnification,
                                              true, // skip redundant
                                              false) // skip beziers
-            + "###\n";
+              + "###\n";
+        } else {
+            workingPathOutput
+              = workingPathOutput
+              + workingPath.toGEDAPolygon(magnification, polyYoffset);
+        }
       }
     }
 
@@ -299,13 +328,18 @@ public class OutlineFont2centrelineFont {
 
       if (outLineOnly) {
 
-        Path testing = glyphPaths.get(k);
+        Path outlinePath = glyphPaths.get(k);
 
         output = output
-            + testing.toGEDAElementLines(limbWidth,
+            + outlinePath.toGEDAElementLines(limbWidth,
                                          magnification,
                                          false,  // aggressive
                                          false); // skip beziers
+      }
+
+      if (exportPolygons) {
+	Path polygonalPath = glyphPaths.get(k);
+	output = output + polygonalPath.toGEDAPolygon(magnification, polyYoffset);
       }
 
       OLP4 = new OutlineParser();

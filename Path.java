@@ -97,6 +97,9 @@ public class Path {
     return tempLines;
   }
 
+
+  // the following is a bit broken; needs to be particular element
+  // vs all the others +/- one path vs others +/- skip neighbouring
   public Path censorDuplicateCollinearLines(int limbThickness) {
     ArrayList<OutlineElement> tempLines
         = new ArrayList<OutlineElement>();
@@ -107,14 +110,14 @@ public class Path {
       }
       tempLines.add(copied); // create copies we can modify
     }
-    for (int index = 1; index < tempLines.size(); index++) {
+    for (int index = 2; index < tempLines.size(); index++) {
       System.out.println("Testing for collinearity...");
-      if (tempLines.get(index-1).isNearlyCollinear((Line)tempLines.get(index), limbThickness)
-          && !(tempLines.get(index-1).isRedundant() //trying this
+      if (tempLines.get(index-2).isNearlyCollinear((Line)tempLines.get(index), limbThickness)
+          && !(tempLines.get(index-2).isRedundant() //trying this
                || tempLines.get(index).isRedundant())) { //and this) {
-        if (tempLines.get(index-1).length()
+        if (tempLines.get(index-2).length()
             < tempLines.get(index).length()) {
-          tempLines.get(index-1).makeRedundant();
+          tempLines.get(index-2).makeRedundant();
           System.out.println("Making first line redundant...");
         } else {
           tempLines.get(index).makeRedundant();
@@ -123,15 +126,15 @@ public class Path {
       }
     }
 
-    if (tempLines.size() > 1) { // now sort out first and last segments
+    if (tempLines.size() > 2) { // now sort out first and last segments
       System.out.println("Testing for collinearity...");
 
-      if (tempLines.get(tempLines.size()-1).isNearlyCollinear((Line)tempLines.get(0), limbThickness)
-          && !(tempLines.get(tempLines.size()-1).isRedundant() //trying this
+      if (tempLines.get(tempLines.size()-2).isNearlyCollinear((Line)tempLines.get(0), limbThickness)
+          && !(tempLines.get(tempLines.size()-2).isRedundant() //trying this
                || tempLines.get(0).isRedundant())) { //and this) {
-        if (tempLines.get(tempLines.size()-1).length()
+        if (tempLines.get(tempLines.size()-2).length()
             < tempLines.get(0).length()) {
-          tempLines.get(tempLines.size()-1).makeRedundant();
+          tempLines.get(tempLines.size()-2).makeRedundant();
           System.out.println("Making first line redundant...");
         } else {
           tempLines.get(0).makeRedundant();
@@ -442,6 +445,17 @@ public class Path {
       tempArray2[index] = tempLines.get(index);
     }
     return tempArray2;
+  }
+
+  public String toGEDAPolygon(double magnification, long yOffset) {
+    System.out.println("converting path to polygon.");
+    Line[] tempLines = this.toLines();
+    System.out.println("path converted to lines.");
+    Polygon tempPoly = new Polygon(tempLines);
+    System.out.println("lines now converted to polygon.");
+    String elements = tempPoly.toGEDAPolygon(magnification, yOffset);
+    System.out.println("polygon converted to String.");
+    return elements;
   }
 
   public String toGEDAElementLines(int limbWidth,

@@ -55,6 +55,8 @@ Other useful flags:
 
 -w manually specify limbwidth for centreline path offsets
 
+-ep Y  export polygons only (experimental), with Y offset (typically value 6333 to 7000)
+
 For example:
 
 java OutlineFont2centrelineFont -se -ssv -sf -ss -op -cl -s thing1.svg -g 1
