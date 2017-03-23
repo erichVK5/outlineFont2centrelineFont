@@ -45,13 +45,13 @@ public class OutlineFont2centrelineFont {
     String fontAscent = ""; // integer value not actually used for now
     String fontDescent = ""; // integer value not actually used for now
 
-    int glyphNumber = 0;
+    int glyphNumber = -1;
     String filename = "";
     int pathToDo = -1;
     int limbWidth = 0; // can now autodetect 70; // 150 for osifont, 70 for hebrew miriam
 
-    int firstGlyph = 0;
-    int lastGlyph = 0; // which glyphs to do in the svg file
+    int firstGlyph = -1;
+    int lastGlyph = -1; // which glyphs to do in the svg file
 
     boolean autoMagnify = true;
     double magnification = 1.0;// can use ascent, descent for scaling
@@ -62,16 +62,16 @@ public class OutlineFont2centrelineFont {
       if (args[index].equals("-s")) {
         filename = args[index+1];
         index++;
-      } else if (args[index].equals("-g")) { //glyph number
+      } else if (args[index].equals("-g")) { //glyph number supercedes first/last
         glyphNumber = Integer.parseInt(args[index+1]);
         index++;
       } else if (args[index].equals("-w")) { //limb width
         limbWidth = Integer.parseInt(args[index+1]);
         index++; // default 70 for now
-      } else if (args[index].equals("-l")) { //first glyph
+      } else if (args[index].equals("-f")) { //first glyph
         firstGlyph = Integer.parseInt(args[index+1]);
         index++;
-      } else if (args[index].equals("-f")) { //last glyph
+      } else if (args[index].equals("-l")) { //last glyph
         lastGlyph = Integer.parseInt(args[index+1]);
         index++; 
       } else if (args[index].equals("-h")) {
@@ -184,91 +184,41 @@ public class OutlineFont2centrelineFont {
     }
 
 
-    Glyph theGlyph = testingFont.provideGlyphNumber(glyphNumber);
-
-    String output = "Element[\"\" \""
-        + theGlyph.glyphName() 
-        + "\" \"\" \"\" 0 0 0 -4000 0 100 \"\"]\n(\n";
-
-    String outputHeader = output;
-
-    OutlineParser OLP4;
-
-    ArrayList<Path> glyphPaths = theGlyph.pathList();
-    ArrayList<Integer> outerPaths = new ArrayList<Integer>();
-    ArrayList<Integer> innerPaths = new ArrayList<Integer>();
-    // here we sort paths by path direction
-    // ttf fonts use CW for outer, CCW for inner
-    for (int i = 0; i < glyphPaths.size(); i++) {
-      if (glyphPaths.get(i).originalDirection() <= 0) {
-        System.out.println("Found an outer path");
-        outerPaths.add(i);
-      } else {
-        System.out.println("Found an inner path");
-        innerPaths.add(i);
-      }
+    if (glyphNumber != -1) {
+      firstGlyph = glyphNumber;
+      lastGlyph = glyphNumber + 1;
     }
+    
+    for (int glyphCounter = firstGlyph; glyphCounter < lastGlyph; glyphCounter++) {
+      System.out.println("Processing Glyph number: " + glyphCounter);
+      Glyph theGlyph = testingFont.provideGlyphNumber(glyphCounter);
 
-    String workingPathOutput = "";
-
-    for (int j : outerPaths) {
-      Path workingPath = new Path(glyphPaths.get(j));
-      if (aggressive || suppressEndcaps) {
-        Path prunedPath
-            = workingPath.removeLikelyEndCaps(limbWidth);
-        workingPath = prunedPath;
-      }
-      if (aggressive || suppressSerifs) {
-        Path prunedPath
-            = workingPath.removeLikelySerifs(limbWidth);
-        workingPath = prunedPath;
-      }
-      if (aggressive || suppressFillets) {
-        Path prunedPath
-            = workingPath.removeLikelyFillets(limbWidth);
-        workingPath = prunedPath;
-      }
-      if (aggressive || suppressSmallVerticals) {
-        Path prunedPath
-            = workingPath.removeSmallVerticals(limbWidth);
-        workingPath = prunedPath;
-      }
-      if (centreLine) {
-        Path finalPath
-            = workingPath.generateOffsetPathCW(limbWidth);
-        workingPath = finalPath;
-        finalPath
-            = workingPath.stitchCloseSequentialBeziers(limbWidth/2);
-        workingPath = finalPath;
-        finalPath
-            = workingPath.stitchCloseSequentialLines(2*limbWidth/3);
-        workingPath = finalPath;
-        if (!preserveCollinears) {
-          finalPath
-              = workingPath.censorDuplicateCollinearLines(limbWidth);
-          workingPath = finalPath;
+      String output = "Element[\"\" \""
+          + theGlyph.glyphName() 
+          + "\" \"\" \"\" 0 0 0 -4000 0 100 \"\"]\n(\n";
+      
+      String outputHeader = output;
+      
+      OutlineParser OLP4;
+      
+      ArrayList<Path> glyphPaths = theGlyph.pathList();
+      ArrayList<Integer> outerPaths = new ArrayList<Integer>();
+      ArrayList<Integer> innerPaths = new ArrayList<Integer>();
+      // here we sort paths by path direction
+      // ttf fonts use CW for outer, CCW for inner
+      for (int i = 0; i < glyphPaths.size(); i++) {
+        if (glyphPaths.get(i).originalDirection() <= 0) {
+          System.out.println("Found an outer path");
+          outerPaths.add(i);
+        } else {
+          System.out.println("Found an inner path");
+          innerPaths.add(i);
         }
       }
-
-      if (!exportPolygons) {
-          workingPathOutput
-            = workingPathOutput
-            + workingPath.toGEDAElementLines(limbWidth,
-                                           magnification,
-                                           true, // skip redundant
-                                           false) // skip beziers
-            + "###\n";
-      } else {
-          workingPathOutput
-            = workingPathOutput + "     li:simplepoly." + j + " {\n"
-            + workingPath.toGEDAPolygon(magnification, polyYoffset, false)
-	    + "     }\n";
-	  pathCount++;
-      }
-    }
-
-    if (!outerPathsOnly) {
-      for (int j : innerPaths) {
+      
+      String workingPathOutput = "";
+      
+      for (int j : outerPaths) {
         Path workingPath = new Path(glyphPaths.get(j));
         if (aggressive || suppressEndcaps) {
           Path prunedPath
@@ -308,270 +258,328 @@ public class OutlineFont2centrelineFont {
         }
         
         if (!exportPolygons) {
-            workingPathOutput
+          workingPathOutput
               = workingPathOutput
               + workingPath.toGEDAElementLines(limbWidth,
-                                             magnification,
-                                             true, // skip redundant
-                                             false) // skip beziers
+                                               magnification,
+                                               true, // skip redundant
+                                               false) // skip beziers
               + "###\n";
         } else {
-            workingPathOutput
-              = workingPathOutput + "     li:simplepoly." + pathCount + " {\n"
+          workingPathOutput
+              = workingPathOutput + "     li:simplepoly." + j + " {\n"
               + workingPath.toGEDAPolygon(magnification, polyYoffset, false)
-	      + "     }\n";
+              + "     }\n";
+	  pathCount++;
+        }
+      }
+      
+      if (!outerPathsOnly) {
+        for (int j : innerPaths) {
+          Path workingPath = new Path(glyphPaths.get(j));
+          if (aggressive || suppressEndcaps) {
+            Path prunedPath
+                = workingPath.removeLikelyEndCaps(limbWidth);
+            workingPath = prunedPath;
+          }
+          if (aggressive || suppressSerifs) {
+            Path prunedPath
+                = workingPath.removeLikelySerifs(limbWidth);
+            workingPath = prunedPath;
+          }
+          if (aggressive || suppressFillets) {
+            Path prunedPath
+                = workingPath.removeLikelyFillets(limbWidth);
+            workingPath = prunedPath;
+          }
+          if (aggressive || suppressSmallVerticals) {
+            Path prunedPath
+                = workingPath.removeSmallVerticals(limbWidth);
+            workingPath = prunedPath;
+          }
+          if (centreLine) {
+            Path finalPath
+                = workingPath.generateOffsetPathCW(limbWidth);
+            workingPath = finalPath;
+            finalPath
+                = workingPath.stitchCloseSequentialBeziers(limbWidth/2);
+            workingPath = finalPath;
+            finalPath
+                = workingPath.stitchCloseSequentialLines(2*limbWidth/3);
+            workingPath = finalPath;
+            if (!preserveCollinears) {
+              finalPath
+                  = workingPath.censorDuplicateCollinearLines(limbWidth);
+              workingPath = finalPath;
+            }
+          }
+          
+          if (!exportPolygons) {
+            workingPathOutput
+                = workingPathOutput
+                + workingPath.toGEDAElementLines(limbWidth,
+                                                 magnification,
+                                                 true, // skip redundant
+                                                 false) // skip beziers
+                + "###\n";
+          } else {
+            workingPathOutput
+                = workingPathOutput + "     li:simplepoly." + pathCount + " {\n"
+                + workingPath.toGEDAPolygon(magnification, polyYoffset, false)
+                + "     }\n";
             pathCount++;
+          }
         }
       }
-    }
-
-
-    String finalOutput = workingPathOutput;
-
-
-    for (int k = 10; k < glyphPaths.size(); k++) {
-
-      OLP4 = new OutlineParser();
-
-      if (outLineOnly) {
-
-        Path outlinePath = glyphPaths.get(k);
-
-        output = output
-            + outlinePath.toGEDAElementLines(limbWidth,
-                                         magnification,
-                                         false,  // aggressive
-                                         false); // skip beziers
-      }
-
-      if (exportPolygons) {
-	Path polygonalPath = glyphPaths.get(k);
-	output = output + polygonalPath.toGEDAPolygon(magnification, polyYoffset, legacy);
-      }
-
-      OLP4 = new OutlineParser();
-
-      OutlineElement[] tester4 = glyphPaths.get(k).toElementArray();
-
-      /*
-      tester4 = OLP4.outlineParserFunction(extractSVGPath(glyphList.get(glyphNumber)).get(k) );
-      System.out.println("__Size of tester4 is: " + tester4.length);
-      for (int j = 0; j < tester4.length; j++) {
-        System.out.println("__array index " + j + " : " + tester4[j]);
-      }
-      */
-
-      int s2index = 0;
-      Line [] segments2 = new Line [400];
-
-      for (int index = 0; index < tester4.length; index++) {
-        if (pathToDo != -1) {
-          index = pathToDo; // for skipping paths, i.e. inside loops.
+      
+      
+      String finalOutput = workingPathOutput;
+      
+      
+      for (int k = 10; k < glyphPaths.size(); k++) {
+        
+        OLP4 = new OutlineParser();
+        
+        if (outLineOnly) {
+          
+          Path outlinePath = glyphPaths.get(k);
+          
+          output = output
+              + outlinePath.toGEDAElementLines(limbWidth,
+                                               magnification,
+                                               false,  // aggressive
+                                               false); // skip beziers
         }
-        plots = plots + tester4[index].toOctaveLine();
-        Line [] segments = tester4[index].toLineArray();
-        //......
-        // try this, arrayList may be better
-
-        // this is the offset line generating phase, putting all
-        // the paths' segments into one array; may be better as list...
-        // if they pass the tests for:
-        // endcap, length
-
-        if (index < (tester4.length - 1)) {
-          for (int offsets = 0; offsets < segments.length; offsets++) {
-            Line temp
-                = segments[offsets].generateCentrelineCW(limbWidth); //150
-
-            // this is where we look for likely end caps, and little
-            // straight bits between them that shouldn't be
-            // rendered
-
-            if (index == 0) { // can only look ahead to next element
-              if ((!aggressive &&
-                  !suppressSerifs) ||
-                  !tester4[index].likelyEndCap(limbWidth) // ) { //150
-                  //                && !tester4[index+1].likelyEndCap(75)) { //150
-                  && !(tester4[index+1].likelyEndCap(limbWidth) // try to catch
-                       && segments[offsets].length() < (limbWidth))) {// serif
-                segments2[s2index]
-                    = segments[offsets].generateCentrelineCW(limbWidth); //150
-                s2index++;
-                //System.out.println("% temp offset line segment: " + temp);
+        
+        if (exportPolygons) {
+          Path polygonalPath = glyphPaths.get(k);
+          output = output + polygonalPath.toGEDAPolygon(magnification, polyYoffset, legacy);
+        }
+        
+        OLP4 = new OutlineParser();
+        
+        OutlineElement[] tester4 = glyphPaths.get(k).toElementArray();
+        
+        /*
+          tester4 = OLP4.outlineParserFunction(extractSVGPath(glyphList.get(glyphNumber)).get(k) );
+          System.out.println("__Size of tester4 is: " + tester4.length);
+          for (int j = 0; j < tester4.length; j++) {
+          System.out.println("__array index " + j + " : " + tester4[j]);
+          }
+        */
+        
+        int s2index = 0;
+        Line [] segments2 = new Line [400];
+        
+        for (int index = 0; index < tester4.length; index++) {
+          if (pathToDo != -1) {
+            index = pathToDo; // for skipping paths, i.e. inside loops.
+          }
+          plots = plots + tester4[index].toOctaveLine();
+          Line [] segments = tester4[index].toLineArray();
+          //......
+          // try this, arrayList may be better
+          
+          // this is the offset line generating phase, putting all
+          // the paths' segments into one array; may be better as list...
+          // if they pass the tests for:
+          // endcap, length
+          
+          if (index < (tester4.length - 1)) {
+            for (int offsets = 0; offsets < segments.length; offsets++) {
+              Line temp
+                  = segments[offsets].generateCentrelineCW(limbWidth); //150
+              
+              // this is where we look for likely end caps, and little
+              // straight bits between them that shouldn't be
+              // rendered
+              
+              if (index == 0) { // can only look ahead to next element
+                if ((!aggressive &&
+                     !suppressSerifs) ||
+                    !tester4[index].likelyEndCap(limbWidth) // ) { //150
+                    //                && !tester4[index+1].likelyEndCap(75)) { //150
+                    && !(tester4[index+1].likelyEndCap(limbWidth) // try to catch
+                         && segments[offsets].length() < (limbWidth))) {// serif
+                  segments2[s2index]
+                      = segments[offsets].generateCentrelineCW(limbWidth); //150
+                  s2index++;
+                  //System.out.println("% temp offset line segment: " + temp);
+                }
+              } else { // we can inspect prior and next elements
+                if ((!aggressive &&
+                     !suppressSerifs) ||
+                    !tester4[index].likelyEndCap(limbWidth/2) // ) { //150
+                    //                && !tester4[index+1].likelyEndCap(75)) { //150
+                    && !((tester4[index+1].likelyEndCap(limbWidth/2)//try to catch
+                          && segments[offsets].length() < (limbWidth))// serifs
+                         || ( segments[offsets].length() < (limbWidth)
+                              && tester4[index-1].likelyEndCap(limbWidth)))){
+                  segments2[s2index]
+                      = segments[offsets].generateCentrelineCW(limbWidth); //150
+                  s2index++;
+                  //plots = plots + "% inserting some offsets now\n"
+                  //+ temp.toOctaveLine();
+                  //System.out.println("% temp offset line segment: " + temp);
+                }
               }
-            } else { // we can inspect prior and next elements
+              
+              
+            }
+          } else {
+            for (int offsets = 0; offsets < segments.length; offsets++) {
+              Line temp = segments[offsets].generateCentrelineCW(limbWidth);
               if ((!aggressive &&
                    !suppressSerifs) ||
-                  !tester4[index].likelyEndCap(limbWidth/2) // ) { //150
+                  !tester4[index].likelyEndCap(limbWidth) // ) { //150
                   //                && !tester4[index+1].likelyEndCap(75)) { //150
-                  && !((tester4[index+1].likelyEndCap(limbWidth/2)//try to catch
-                        && segments[offsets].length() < (limbWidth))// serifs
-                       || ( segments[offsets].length() < (limbWidth)
-                            && tester4[index-1].likelyEndCap(limbWidth)))){
+                  && !(tester4[0].likelyEndCap(limbWidth) // try to catch
+                       && segments[offsets].length() < (limbWidth))) {
                 segments2[s2index]
-                    = segments[offsets].generateCentrelineCW(limbWidth); //150
+                    = segments[offsets].generateCentrelineCW(limbWidth);
                 s2index++;
-                //plots = plots + "% inserting some offsets now\n"
-                //+ temp.toOctaveLine();
-                //System.out.println("% temp offset line segment: " + temp);
-              }
-            }
-            
-            
-          }
-        } else {
-          for (int offsets = 0; offsets < segments.length; offsets++) {
-            Line temp = segments[offsets].generateCentrelineCW(limbWidth);
-            if ((!aggressive &&
-                 !suppressSerifs) ||
-                !tester4[index].likelyEndCap(limbWidth) // ) { //150
-                //                && !tester4[index+1].likelyEndCap(75)) { //150
-                && !(tester4[0].likelyEndCap(limbWidth) // try to catch
-                     && segments[offsets].length() < (limbWidth))) {
-              segments2[s2index]
-                  = segments[offsets].generateCentrelineCW(limbWidth);
-              s2index++;
-            }
-          }
-        }
-        if (pathToDo != -1) {
-          index = tester4.length; //skip other remaining paths.
-        }
-
-      }
-
-      // now we stitch non beziers together
-      
-      for (int i = 0; i < s2index; i++) {
-        if (i < (s2index - 1)
-            && !(segments2[i].isBezierSegment()
-                 || segments2[i+1].isBezierSegment())) {
-          segments2[i]
-              = segments2[i].extendToNearLine(segments2[i+1],limbWidth,0.8);
-          segments2[i+1]
-              = segments2[i+1].extendToNearLine(segments2[i],limbWidth,0.8);
-          //System.out.println("% about to Test for line duplication");
-          // reinstated the following
-          if (aggressive) {
-
-            if (segments2[i].isNearlyCollinear(segments2[i+1], limbWidth)
-                && !(segments2[i+1].redundantLine //trying this
-                     || segments2[i].redundantLine)) { //and this) {
-              if (segments2[i].length() < segments2[i+1].length()) {
-                segments2[i].makeRedundant();
-              } else {
-                segments2[i+1].makeRedundant();
               }
             }
           }
-          // UP TO HERE
+          if (pathToDo != -1) {
+            index = tester4.length; //skip other remaining paths.
+          }
+          
         }
-
-
-        if (i == (s2index - 1)
-            && !(segments2[i].isBezierSegment()
-                 || segments2[0].isBezierSegment())) {
-          segments2[i]
-              = segments2[i].extendToNearLine(segments2[0],limbWidth,.8);
-          segments2[0]
-              = segments2[i].extendToNearLine(segments2[i],limbWidth,.8);
-
-          if (aggressive) {
+        
+        // now we stitch non beziers together
+        
+        for (int i = 0; i < s2index; i++) {
+          if (i < (s2index - 1)
+              && !(segments2[i].isBezierSegment()
+                   || segments2[i+1].isBezierSegment())) {
+            segments2[i]
+                = segments2[i].extendToNearLine(segments2[i+1],limbWidth,0.8);
+            segments2[i+1]
+                = segments2[i+1].extendToNearLine(segments2[i],limbWidth,0.8);
+            //System.out.println("% about to Test for line duplication");
             // reinstated the following
-            if (segments2[i].isAntiParallelTo(segments2[0])
-                && !(segments2[0].redundantLine //trying this
-                     || segments2[i].redundantLine)) { //and this
-              if (segments2[i].length() <= segments2[0].length()) {
-                segments2[i].makeRedundant();
-              } else {
-                segments2[0].makeRedundant();
+            if (aggressive) {
+              
+              if (segments2[i].isNearlyCollinear(segments2[i+1], limbWidth)
+                  && !(segments2[i+1].redundantLine //trying this
+                       || segments2[i].redundantLine)) { //and this) {
+                if (segments2[i].length() < segments2[i+1].length()) {
+                  segments2[i].makeRedundant();
+                } else {
+                  segments2[i+1].makeRedundant();
+                }
               }
-            }  
-            // up to here.
+            }
+            // UP TO HERE
           }
-
-        }  
+          
+          
+          if (i == (s2index - 1)
+              && !(segments2[i].isBezierSegment()
+                   || segments2[0].isBezierSegment())) {
+            segments2[i]
+                = segments2[i].extendToNearLine(segments2[0],limbWidth,.8);
+            segments2[0]
+                = segments2[i].extendToNearLine(segments2[i],limbWidth,.8);
+            
+            if (aggressive) {
+              // reinstated the following
+              if (segments2[i].isAntiParallelTo(segments2[0])
+                  && !(segments2[0].redundantLine //trying this
+                       || segments2[i].redundantLine)) { //and this
+                if (segments2[i].length() <= segments2[0].length()) {
+                segments2[i].makeRedundant();
+                } else {
+                  segments2[0].makeRedundant();
+                }
+              }  
+              // up to here.
+            }
+            
+          }  
+          
+        }
+        
+        // we try to identify duplicates
+        
+        OutlineElement.flagDuplicateElements(segments2, s2index, limbWidth); //try this
+        
+        // we now generate the plotted lines, if not redundant
+        
+        for (int i = 0; i < s2index; i++) {
+          if (segments2[i].redundantLine) {
+            //System.out.println("Skipping redundant line.");
+          } else if (segments2[i].isBezierSegment() 
+                     && skippingBeziers) {
+            //System.out.println("Skipping bezier segment.");
+          } else {
+            output = output
+                + segments2[i].toElementLine(limbWidth,magnification);
+            plots = plots + "% inserting some offsets now\n"
+                + segments2[i].toOctaveLine();
+          }
+        }
+        
         
       }
-
-      // we try to identify duplicates
-
-      OutlineElement.flagDuplicateElements(segments2, s2index, limbWidth); //try this
-
-      // we now generate the plotted lines, if not redundant
-
-      for (int i = 0; i < s2index; i++) {
-        if (segments2[i].redundantLine) {
-          //System.out.println("Skipping redundant line.");
-        } else if (segments2[i].isBezierSegment() 
-                   && skippingBeziers) {
-          //System.out.println("Skipping bezier segment.");
-        } else {
-          output = output
-              + segments2[i].toElementLine(limbWidth,magnification);
-          plots = plots + "% inserting some offsets now\n"
-              + segments2[i].toOctaveLine();
-        }
-      }
-
       
-    }
-
-    if (!exportPolygons) {
-      finalOutput = outputHeader + finalOutput + ")\n";
-    } else if (!legacy) {
-      finalOutput = "   ha:"
-		+ theGlyph.glyphName()
-		+ " {\n"
-		+ "    width=50.0mil; delta=12.0mil;\n"
-    		+ "    li:objects {\n"
-		+ finalOutput 
-		+ "    height = 63.33mil\n"
-		+ "   }\n";
-    }
-
-    if (suppressSmallVerticals) {
-      System.out.println("suppressing small verticals");
-    } else {
-      System.out.println("not suppressing small verticals");
-    }
-
-    /*
-    output2 = output2 + ")\n";
-    output3 = output3 + ")\n";
-    output4 = output4 + ")\n";
-
-    output5 = output5 + ")\n";
-
-    output = output + ")\n";
-    */
-
-    String fpName = theGlyph.glyphName()
-                   + "-hadvx"
-                   + theGlyph.horizAdvance()
-                   + "-asc"
-                   + theGlyph.ascent()
-                   + "-desc"
-                   + theGlyph.descent();
-
-    if (exportPolygons && !legacy) {
+      if (!exportPolygons) {
+        finalOutput = outputHeader + finalOutput + ")\n";
+      } else if (!legacy) {
+        finalOutput = "   ha:"
+            + theGlyph.glyphName()
+            + " {\n"
+            + "    width=50.0mil; delta=12.0mil;\n"
+            + "    li:objects {\n"
+            + finalOutput 
+            + "    height = 63.33mil\n"
+            + "   }\n";
+      }
+      
+      if (suppressSmallVerticals) {
+        System.out.println("suppressing small verticals");
+      } else {
+        System.out.println("not suppressing small verticals");
+      }
+      
+      /*
+        output2 = output2 + ")\n";
+        output3 = output3 + ")\n";
+        output4 = output4 + ")\n";
+        
+        output5 = output5 + ")\n";
+        
+        output = output + ")\n";
+      */
+      
+      String fpName = theGlyph.glyphName()
+          + "-hadvx"
+          + theGlyph.horizAdvance()
+          + "-asc"
+          + theGlyph.ascent()
+          + "-desc"
+          + theGlyph.descent();
+      
+      if (exportPolygons && !legacy) {
 	fpName = fpName + ".lht";
-    } else {
+      } else {
 	fpName = fpName + ".fp";
+      }
+      
+      File out = new File(fpName);
+      
+      PrintWriter fp = new PrintWriter(out);
+
+      fp.println(finalOutput);
+      //    fp.println(output);
+      fp.close();
+      
+      System.out.println("Glyph ascent and descent:"
+                         + theGlyph.ascent() + ", "
+                         + theGlyph.descent());
+      System.out.println("magnification:" + magnification);
     }
-
-    File out = new File(fpName);
-
-    PrintWriter fp = new PrintWriter(out);
-
-    fp.println(finalOutput);
-    //    fp.println(output);
-    fp.close();
-
-    System.out.println("Glyph ascent and descent:"
-                       + theGlyph.ascent() + ", "
-                       + theGlyph.descent());
-    System.out.println("magnification:" + magnification);
 
   }
 
