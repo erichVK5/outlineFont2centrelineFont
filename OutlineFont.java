@@ -117,19 +117,20 @@ public class OutlineFont {
     //System.out.println("Paths 'temp' before OutlineFont tokenises: " + 
     //                     temp );
     index = temp.indexOf("d=\"");
-    temp = temp.substring(index);
-    index = temp.indexOf("Z\" "); // we may still have multiple paths
-    temp = temp.substring(3,index);
     ArrayList<String> retList = new ArrayList<String>();
-    String[] tokenisedByZ = temp.split("Z");
-    //System.out.println("Paths 'temp' just before OutlineFont tokenises: " + 
-    //                     temp );
-    for (String str : tokenisedByZ) {
-      //System.out.println("New path from OutlineFont tokenising: " + 
-      //                   str );
-      retList.add(str);
+    if (index > 0) {
+      temp = temp.substring(index);
+      index = temp.indexOf("Z\" "); // we may still have multiple paths
+      temp = temp.substring(3,index);
+      String[] tokenisedByZ = temp.split("Z");
+      //System.out.println("Paths 'temp' just before OutlineFont tokenises: " + 
+      //                     temp );
+      for (String str : tokenisedByZ) {
+        //System.out.println("New path from OutlineFont tokenising: " + 
+        //                   str );
+        retList.add(str);
+      }
     }
- 
     return retList;
   }
 
@@ -162,8 +163,12 @@ public class OutlineFont {
 
   private int extractHorizAdvX(String glyph) {
     int index = glyph.indexOf("horiz-adv-x=\"");
-    String temp = glyph.substring(index);
-    index = temp.indexOf("\" ");
-    return Integer.parseInt(temp.substring(13,index));
+    if (index >= 0) {
+	String temp = glyph.substring(index);
+    	index = temp.indexOf("\" ");
+    	return Integer.parseInt(temp.substring(13,index));
+    } else {
+	return 0;
+    }	
   }
 }
