@@ -10,6 +10,9 @@ public class Path {
   Point start = null;
   Point end = null;
   private int originalDirection = 0;
+  private long polyWidth = 0;
+  private long xMin = 10000000;
+  private long xMax = -10000000;
 
   public Path(String SVGPath, String type) {// can extend for DXF etc..
     if (type.equals("svg") || type.equals("SVG") ) {
@@ -97,6 +100,18 @@ public class Path {
     return tempLines;
   }
 
+  public long polygonWidth() { // used for lihata polygons
+    System.out.println("Polygon width is: " + polyWidth);
+    return polyWidth;
+  }
+
+  public long pathMinX() { // used for lihata polygons
+    return xMin;
+  }
+
+  public long pathMaxX() { // used for lihata polygons
+    return xMax;
+  }
 
   // the following is a bit broken; needs to be particular element
   // vs all the others +/- one path vs others +/- skip neighbouring
@@ -454,6 +469,13 @@ public class Path {
     Polygon tempPoly = new Polygon(tempLines);
     System.out.println("lines now converted to polygon.");
     String elements = tempPoly.toGEDAPolygon(magnification, yOffset, legacy);
+    if (xMin > tempPoly.polyMinimumX()) {
+      xMin = tempPoly.polyMinimumX();
+    }
+    if (xMax < tempPoly.polyMaximumX()) {
+      xMax = tempPoly.polyMaximumX();
+    } // tests only work after poly converted to String
+    polyWidth = (xMax - xMin)/100;
     System.out.println("polygon converted to String.");
     return elements;
   }

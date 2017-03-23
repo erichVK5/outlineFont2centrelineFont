@@ -5,6 +5,10 @@ public class Polygon extends OutlineElement {
 
   ArrayList<Point> pointList = new ArrayList<Point>();
 
+  private long maximumWidth = 0;
+  private long xMin = 10000000;
+  private long xMax = -10000000; 
+
   // some constructors
   public Polygon(Line[] lines) {
     for (int i = 0; i < lines.length; i++) {
@@ -43,6 +47,18 @@ public class Polygon extends OutlineElement {
     }
     aQuadraticBezier = false;
     isALine = true;
+  }
+
+  public long maximumWidth() { // used for polygons in .lht
+    return maximumWidth;
+  }
+
+  public long polyMinimumX() { // used for polygons in .lht
+    return xMin;
+  }
+
+  public long polyMaximumX() { // used for polygons in .lht
+    return xMax;
   }
 
   public void addPoint(Point p) {
@@ -150,6 +166,14 @@ public class Polygon extends OutlineElement {
                + "       "
                + xCoord/100.0 + "mil; "
                + yCoord/100.0 + "mil\n";
+            if (xCoord < xMin) {
+              xMin = xCoord;
+            }
+            if (xCoord > xMax) {
+              xMax = xCoord;
+            }
+            maximumWidth = (xMax - xMin)/100;
+            //System.out.println("Maximum poly width: " + maximumWidth);
       }
       return retPolygon;
     }

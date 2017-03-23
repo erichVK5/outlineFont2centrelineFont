@@ -21,6 +21,9 @@ public class OutlineFont2centrelineFont {
     Line tempOffset;
     Line oldOffset = new Line(0,0,0,0);
     Line trimmedOffset;
+    long polygonWidthMil = 0;
+    long xMin = 1000000;
+    long xMax = -1000000;
     Point oldStart;
     Point oldEnd;
     String plots = "";
@@ -190,6 +193,7 @@ public class OutlineFont2centrelineFont {
     }
     
     for (int glyphCounter = firstGlyph; glyphCounter < lastGlyph; glyphCounter++) {
+      polygonWidthMil = 50; // make it default to 50mil for now
       System.out.println("Processing Glyph number: " + glyphCounter);
       Glyph theGlyph = testingFont.provideGlyphNumber(glyphCounter);
 
@@ -328,6 +332,18 @@ public class OutlineFont2centrelineFont {
                 + workingPath.toGEDAPolygon(magnification, polyYoffset, false)
                 + "     }\n";
             pathCount++;
+            System.out.println("Processing polygon of width: " + workingPath.polygonWidth());
+            //if (polygonWidthMil < workingPath.polygonWidth()) {
+            //polygonWidthMil = workingPath.polygonWidth();
+            //
+            if (xMin >  workingPath.pathMinX()) {
+              xMin = workingPath.pathMinX();
+            }
+            if (xMax < workingPath.pathMaxX()) {
+              xMax = workingPath.pathMaxX();
+            } // tests only work after poly converted to String
+            polygonWidthMil = (xMax - xMin)/100;
+            //}
           }
         }
       }
@@ -354,6 +370,10 @@ public class OutlineFont2centrelineFont {
         if (exportPolygons) {
           Path polygonalPath = glyphPaths.get(k);
           output = output + polygonalPath.toGEDAPolygon(magnification, polyYoffset, legacy);
+          System.out.println("Processing polygon of width: " + polygonalPath.polygonWidth());
+          if (polygonWidthMil < polygonalPath.polygonWidth()) {
+            polygonWidthMil = polygonalPath.polygonWidth();
+          }
         }
         
         OLP4 = new OutlineParser();
@@ -530,7 +550,7 @@ public class OutlineFont2centrelineFont {
         finalOutput = "   ha:"
             + theGlyph.glyphName()
             + " {\n"
-            + "    width=50.0mil; delta=12.0mil;\n"
+            + "    width=" + polygonWidthMil + "mil; delta=12.0mil;\n"
             + "    li:objects {\n"
             + finalOutput
             + "    }\n"

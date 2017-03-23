@@ -18,6 +18,9 @@ public class Line extends OutlineElement {
     if (other.isBezierSegment()) {
       isBezierSegment = true;
     }
+    if (other.isRedundant()) {
+      redundantLine = true;
+    }
   }
 
 
@@ -69,6 +72,9 @@ public class Line extends OutlineElement {
     Line retLine = new Line(this);
     if (this.isBezierSegment() ) {
       retLine.setAsBezierSegment();
+    }
+    if (this.isRedundant()) {
+      retLine.makeRedundant();
     }
     return retLine;
   }
@@ -451,7 +457,7 @@ public class Line extends OutlineElement {
 
   public Line [] toLineArray() {
     Line [] lineSegments = new Line [1];
-    lineSegments[0] = new Line(this);
+    lineSegments[0] = this.copyOf();
     return lineSegments;
   }
 
