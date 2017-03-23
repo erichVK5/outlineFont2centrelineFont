@@ -532,9 +532,10 @@ public class OutlineFont2centrelineFont {
             + " {\n"
             + "    width=50.0mil; delta=12.0mil;\n"
             + "    li:objects {\n"
-            + finalOutput 
+            + finalOutput
+            + "    }\n"
             + "    height = 63.33mil\n"
-            + "   }\n";
+            + "   }";
       }
       
       if (suppressSmallVerticals) {
