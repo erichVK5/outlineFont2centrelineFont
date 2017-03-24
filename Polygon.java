@@ -49,15 +49,33 @@ public class Polygon extends OutlineElement {
     isALine = true;
   }
 
-  public long maximumWidth() { // used for polygons in .lht
+  private long findExtents(double magnification) {
+    int nVertices = pointList.size();
+    for (int i = 0; i < (nVertices); i++) {
+      long xCoord = (long)(pointList.get(i).getX()*magnification);
+      if (xCoord < xMin) {
+        xMin = xCoord;
+      }
+      if (xCoord > xMax) {
+        xMax = xCoord;
+      }
+      maximumWidth = (xMax - xMin)/100; // in mil
+    }
     return maximumWidth;
+  } 
+
+
+  public long maximumWidth(double magnification) { // used for polygons in .lht
+    return findExtents(magnification);
   }
 
-  public long polyMinimumX() { // used for polygons in .lht
+  public long polyMinimumX(double magnification) { // used for polygons in .lht
+    findExtents(magnification);
     return xMin;
   }
 
-  public long polyMaximumX() { // used for polygons in .lht
+  public long polyMaximumX(double magnification) { // used for polygons in .lht
+    findExtents(magnification);
     return xMax;
   }
 

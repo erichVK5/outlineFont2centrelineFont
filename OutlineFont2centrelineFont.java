@@ -59,6 +59,12 @@ public class OutlineFont2centrelineFont {
     boolean autoMagnify = true;
     double magnification = 1.0;// can use ascent, descent for scaling
 
+    String lihataFontHeader
+        = "li:pcb-rnd-font-v1 {\n ha:geda_pcb {\n  id = 0\n  ha:symbols {";
+    String lihataFontBody = "";
+    String lihataFontFooter
+        = "}\n  cell_width = 2.87641mm\n  cell_height = 1.879602mm\n }\n}";
+
     ArrayList<String> glyphList= new ArrayList<String>();
 
     for (int index = 0; index < args.length; index++) {
@@ -332,15 +338,15 @@ public class OutlineFont2centrelineFont {
                 + workingPath.toGEDAPolygon(magnification, polyYoffset, false)
                 + "     }\n";
             pathCount++;
-            System.out.println("Processing polygon of width: " + workingPath.polygonWidth());
+            System.out.println("Processing polygon of width: " + workingPath.pathWidth(magnification));
             //if (polygonWidthMil < workingPath.polygonWidth()) {
             //polygonWidthMil = workingPath.polygonWidth();
             //
-            if (xMin >  workingPath.pathMinX()) {
-              xMin = workingPath.pathMinX();
+            if (xMin >  workingPath.pathMinX(magnification)) {
+              xMin = workingPath.pathMinX(magnification);
             }
-            if (xMax < workingPath.pathMaxX()) {
-              xMax = workingPath.pathMaxX();
+            if (xMax < workingPath.pathMaxX(magnification)) {
+              xMax = workingPath.pathMaxX(magnification);
             } // tests only work after poly converted to String
             polygonWidthMil = (xMax - xMin)/100;
             //}
@@ -370,9 +376,9 @@ public class OutlineFont2centrelineFont {
         if (exportPolygons) {
           Path polygonalPath = glyphPaths.get(k);
           output = output + polygonalPath.toGEDAPolygon(magnification, polyYoffset, legacy);
-          System.out.println("Processing polygon of width: " + polygonalPath.polygonWidth());
-          if (polygonWidthMil < polygonalPath.polygonWidth()) {
-            polygonWidthMil = polygonalPath.polygonWidth();
+          System.out.println("Processing polygon of width: " + polygonalPath.pathWidth(magnification));
+          if (polygonWidthMil < polygonalPath.pathWidth(magnification)) {
+            polygonWidthMil = polygonalPath.pathWidth(magnification);
           }
         }
         
@@ -550,12 +556,14 @@ public class OutlineFont2centrelineFont {
         finalOutput = "   ha:"
             + theGlyph.glyphName()
             + " {\n"
-            + "    width=" + polygonWidthMil + "mil; delta=12.0mil;\n"
+            + "    width=" + (theGlyph.glyphWidth(magnification)/100)
+            + "mil; delta=12.0mil;\n"
             + "    li:objects {\n"
             + finalOutput
             + "    }\n"
             + "    height = 63.33mil\n"
             + "   }";
+        lihataFontBody = lihataFontBody + finalOutput + "\n";
       }
       
       if (suppressSmallVerticals) {
@@ -602,6 +610,14 @@ public class OutlineFont2centrelineFont {
       System.out.println("magnification:" + magnification);
     }
 
+    if (!legacy && exportPolygons) {
+      File out = new File(filename+"Font.lht");
+      PrintWriter fp = new PrintWriter(out);
+      fp.println(lihataFontHeader);
+      fp.println(lihataFontBody);
+      fp.println(lihataFontFooter);
+      fp.close();
+    }
   }
 
   static private ArrayList<String> extractSVGPath(String glyph) {

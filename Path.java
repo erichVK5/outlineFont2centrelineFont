@@ -100,16 +100,26 @@ public class Path {
     return tempLines;
   }
 
-  public long polygonWidth() { // used for lihata polygons
-    System.out.println("Polygon width is: " + polyWidth);
+  private void calculateExtents(double magnification) {
+    Line[] tempLines = this.toLines();
+    Polygon tempPoly = new Polygon(tempLines);
+    xMin = tempPoly.polyMinimumX(magnification);
+    xMax = tempPoly.polyMaximumX(magnification);
+    polyWidth = (xMax - xMin)/100;
+  }
+
+  public long pathWidth(double magnification) { // used for lihata polygons
+    calculateExtents(magnification);
     return polyWidth;
   }
 
-  public long pathMinX() { // used for lihata polygons
+  public long pathMinX(double magnification) { // used for lihata polygons
+    calculateExtents(magnification);
     return xMin;
   }
 
-  public long pathMaxX() { // used for lihata polygons
+  public long pathMaxX(double magnification) { // used for lihata polygons
+    calculateExtents(magnification);
     return xMax;
   }
 
@@ -469,13 +479,6 @@ public class Path {
     Polygon tempPoly = new Polygon(tempLines);
     System.out.println("lines now converted to polygon.");
     String elements = tempPoly.toGEDAPolygon(magnification, yOffset, legacy);
-    if (xMin > tempPoly.polyMinimumX()) {
-      xMin = tempPoly.polyMinimumX();
-    }
-    if (xMax < tempPoly.polyMaximumX()) {
-      xMax = tempPoly.polyMaximumX();
-    } // tests only work after poly converted to String
-    polyWidth = (xMax - xMin)/100;
     System.out.println("polygon converted to String.");
     return elements;
   }
