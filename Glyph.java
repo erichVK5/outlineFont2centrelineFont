@@ -8,8 +8,9 @@ public class Glyph {
   public long fontDescent = 0L;
   public long horizAdvance = 0L;
   public String glyphName = "GlyphNameNotSet";
-
-  public long overallWidth = 0;
+  private long minX = 0;
+  private long maxX = 0;
+  private long overallWidth = 0;
 
   public Glyph(ArrayList<String> SVGPaths) {
     paths = new ArrayList<Path>();
@@ -90,18 +91,23 @@ public class Glyph {
     return horizAdvance;
   }
 
+  public long xOffset(double magnification) {
+    glyphWidth(magnification);
+    return minX;
+  }
+
   public long glyphWidth(double magnification) {
-    long minX = 10000000;
-    long maxX = -10000000;
+    minX = 10000000;
+    maxX = -10000000;
     for (int j = 0; j < paths.size(); j++) {
-      if (minX > paths.get(0).pathMinX(magnification)) {
-        minX = paths.get(0).pathMinX(magnification);
+      if (minX > paths.get(j).pathMinX(magnification)) {
+        minX = paths.get(j).pathMinX(magnification);
       }
-      if (maxX < paths.get(0).pathMaxX(magnification)) {
-        maxX = paths.get(0).pathMaxX(magnification);
+      if (maxX < paths.get(j).pathMaxX(magnification)) {
+        maxX = paths.get(j).pathMaxX(magnification);
       }      
     }
-    overallWidth = maxX;
+    overallWidth = maxX-minX;
     return overallWidth;
   }
 

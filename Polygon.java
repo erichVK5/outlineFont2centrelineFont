@@ -154,10 +154,10 @@ public class Polygon extends OutlineElement {
   }
 
   public String toGEDAPolygon() {
-    return toGEDAPolygon(1.0, 0, true);
+    return toGEDAPolygon(1.0, 0, 0, true);
   }
 
-  public String toGEDAPolygon(double magnification, long yOffset, boolean legacy) {
+  public String toGEDAPolygon(double magnification, long yOffset, long xOffset, boolean legacy) {
     System.out.println("converting Polygon object to gEDA polygon definition.");
     int nVertices = pointList.size();
     if (legacy) {
@@ -178,20 +178,13 @@ public class Polygon extends OutlineElement {
     } else {
       String retPolygon = "";
       for (int i = 0; i < (nVertices); i++) {
-	    long xCoord = (long)(pointList.get(i).getX()*magnification);
-	    long yCoord = (long)(yOffset-pointList.get(i).getY()*magnification); 
-            retPolygon = retPolygon
-               + "       "
-               + xCoord/100.0 + "mil; "
-               + yCoord/100.0 + "mil\n";
-            if (xCoord < xMin) {
-              xMin = xCoord;
-            }
-            if (xCoord > xMax) {
-              xMax = xCoord;
-            }
-            maximumWidth = (xMax - xMin)/100;
-            //System.out.println("Maximum poly width: " + maximumWidth);
+        long xCoord
+            = (long)(pointList.get(i).getX()*magnification);
+        long yCoord = (long)(yOffset-pointList.get(i).getY()*magnification); 
+        retPolygon = retPolygon
+            + "       "
+            + (xCoord - xOffset)/100.0 + "mil; "
+            + yCoord/100.0 + "mil\n";
       }
       return retPolygon;
     }

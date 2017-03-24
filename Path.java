@@ -472,13 +472,13 @@ public class Path {
     return tempArray2;
   }
 
-  public String toGEDAPolygon(double magnification, long yOffset, boolean legacy) {
+  public String toGEDAPolygon(double magnification, long yOffset, long xOffset, boolean legacy) {
     System.out.println("converting path to polygon.");
     Line[] tempLines = this.toLines();
     System.out.println("path converted to lines.");
     Polygon tempPoly = new Polygon(tempLines);
     System.out.println("lines now converted to polygon.");
-    String elements = tempPoly.toGEDAPolygon(magnification, yOffset, legacy);
+    String elements = tempPoly.toGEDAPolygon(magnification, yOffset, xOffset, legacy);
     System.out.println("polygon converted to String.");
     return elements;
   }

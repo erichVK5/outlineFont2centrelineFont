@@ -63,7 +63,7 @@ public class OutlineFont2centrelineFont {
         = "li:pcb-rnd-font-v1 {\n ha:geda_pcb {\n  id = 0\n  ha:symbols {";
     String lihataFontBody = "";
     String lihataFontFooter
-        = "}\n  cell_width = 2.87641mm\n  cell_height = 1.879602mm\n }\n}";
+        = "  }\n  cell_width = 2.87641mm\n  cell_height = 1.879602mm\n }\n}";
 
     ArrayList<String> glyphList= new ArrayList<String>();
 
@@ -278,7 +278,7 @@ public class OutlineFont2centrelineFont {
         } else {
           workingPathOutput
               = workingPathOutput + "     li:simplepoly." + j + " {\n"
-              + workingPath.toGEDAPolygon(magnification, polyYoffset, false)
+              + workingPath.toGEDAPolygon(magnification, polyYoffset, theGlyph.xOffset(magnification), false)
               + "     }\n";
 	  pathCount++;
         }
@@ -335,21 +335,10 @@ public class OutlineFont2centrelineFont {
           } else {
             workingPathOutput
                 = workingPathOutput + "     li:simplepoly." + pathCount + " {\n"
-                + workingPath.toGEDAPolygon(magnification, polyYoffset, false)
+                + workingPath.toGEDAPolygon(magnification, polyYoffset,theGlyph.xOffset(magnification), false)
                 + "     }\n";
             pathCount++;
             System.out.println("Processing polygon of width: " + workingPath.pathWidth(magnification));
-            //if (polygonWidthMil < workingPath.polygonWidth()) {
-            //polygonWidthMil = workingPath.polygonWidth();
-            //
-            if (xMin >  workingPath.pathMinX(magnification)) {
-              xMin = workingPath.pathMinX(magnification);
-            }
-            if (xMax < workingPath.pathMaxX(magnification)) {
-              xMax = workingPath.pathMaxX(magnification);
-            } // tests only work after poly converted to String
-            polygonWidthMil = (xMax - xMin)/100;
-            //}
           }
         }
       }
@@ -375,11 +364,9 @@ public class OutlineFont2centrelineFont {
         
         if (exportPolygons) {
           Path polygonalPath = glyphPaths.get(k);
-          output = output + polygonalPath.toGEDAPolygon(magnification, polyYoffset, legacy);
+          output = output + polygonalPath.toGEDAPolygon(magnification, polyYoffset, theGlyph.xOffset(magnification), legacy);
           System.out.println("Processing polygon of width: " + polygonalPath.pathWidth(magnification));
-          if (polygonWidthMil < polygonalPath.pathWidth(magnification)) {
-            polygonWidthMil = polygonalPath.pathWidth(magnification);
-          }
+          polygonWidthMil = theGlyph.glyphWidth(magnification);
         }
         
         OLP4 = new OutlineParser();
@@ -670,6 +657,5 @@ public class OutlineFont2centrelineFont {
     index = temp.indexOf("\" ");
     return Integer.parseInt(temp.substring(13,index));
   }
-
 
 }
