@@ -8,11 +8,11 @@ The workflow is a work in progress, and this README is more of an aid to remembe
 
 Nevertheless, the code is now at the point where it can simplfy the job of converting outline defined glyphs to centreline defined glyphs, for use in PCB, or other plotter, eggbot, engraving or similar activities.
 
-The code can now generate a complete pcb-rnd compatible font file in lihata (.lht) format if asked to. The only things that have to be done manually to the generated font file full of polygonal glyphs is
-- subsituting the glyph names with standard ASCII chars, i.e. put '=' instead of "equals" and so forth.- also, braces "{", "}", colon ":" and tilde "~" need to be susbtituted with heax, i.e. x76 . Perusing the Klingon font file, for example, will give you the right idea.
+The code can now generate a complete pcb-rnd compatible font file in lihata (.lht) format if asked to. The only things that have to be done manually (until more code is written) to the generated font file full of polygonal glyphs is
+- substituting the glyph names with standard ASCII chars, i.e. put '=' instead of "equals" and so forth.- also, braces "{", "}", colon ":" and tilde "~" need to be susbtituted with heax, i.e. x76 . Perusing the Klingon font file, for example, will give you the right idea.
 - internal polygons need to be combined into external polygon paths. This needs to be automated, but the code is yet to be written. 
 
-The code was orinally written with the single purpose of simplifying centreline defined (or stroked/engraving) font generation from existing truetype fonts, but the recent additional of polygon support within glyphs in the gEDA PCB fork pcb-rnd has led to additional code being added to quickly and easily generate font files with glyphs drawn with polygons.
+The code was originally written with the single purpose of simplifying centreline defined (or stroked/engraving) font generation from existing truetype fonts, but the recent additional of polygon support within glyphs in the gEDA PCB fork pcb-rnd has led to additional code being added to quickly and easily generate font files with glyphs drawn with polygons.
 
 As an aside, fonts which are sans serif and of uniform thickness are best suited to conversion to centreline defined fonts. Those which have complex, tapering, or very skinny serifs will be difficult to convert effectively to a stroked or centreline font.
 
