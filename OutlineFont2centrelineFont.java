@@ -541,7 +541,7 @@ public class OutlineFont2centrelineFont {
         finalOutput = outputHeader + finalOutput + ")\n";
       } else if (!legacy) {
         finalOutput = "   ha:"
-            + theGlyph.glyphName()
+            + lihataGlyphHash(theGlyph.glyphName())
             + " {\n"
             + "    width=" + (theGlyph.glyphWidth(magnification)/100)
             + "mil; delta=12.0mil;\n"
@@ -605,6 +605,102 @@ public class OutlineFont2centrelineFont {
       fp.println(lihataFontFooter);
       fp.close();
     }
+  }
+
+  static private String lihataGlyphHash(String glyphName) {
+    if (glyphName.equals("~")
+               || glyphName.equals("asciitilde")) {
+      return "&7E";
+    } else if (glyphName.equals("}")
+               || glyphName.equals("braceright")) {
+      return "&7D";
+    } else if (glyphName.equals("{")
+               || glyphName.equals("braceleft")) {
+      return "\\{";
+    } else if (glyphName.equals(":")
+               || glyphName.equals("colon")) {
+      return "\\:";
+    } else if (glyphName.equals("=")
+               || glyphName.equals("equal")) {
+      return "\\=";
+    } else if (glyphName.equals("#")
+               || glyphName.equals("numbersign")) {
+      return "\\#";
+    } else if (glyphName.equals("&")
+               || glyphName.equals("ampersand")) {
+      return "&26";
+    } else if (glyphName.equals("quotedbl")) {
+      return "\"";
+    } else if (glyphName.equals("dollar")) {
+      return "$";
+    } else if (glyphName.equals("percent")) {
+      return "%";
+    } else if (glyphName.equals("quotesingle")) {
+      return "'";
+    } else if (glyphName.equals("parenleft")) {
+      return "(";
+    } else if (glyphName.equals("parenright")) {
+      return ")";
+    } else if (glyphName.equals("asterisk")) {
+      return "*";
+    } else if (glyphName.equals("plus")) {
+      return "+";
+    } else if (glyphName.equals("comma")) {
+      return ",";
+    } else if (glyphName.equals("hyphen")) {
+      return "-";
+    } else if (glyphName.equals("period")) {
+      return ".";
+    } else if (glyphName.equals("slash")) {
+      return "/";
+    } else if (glyphName.equals("zero")) {
+      return "0";
+    } else if (glyphName.equals("one")) {
+      return "1";
+    } else if (glyphName.equals("two")) {
+      return "2";
+    } else if (glyphName.equals("three")) {
+      return "3";
+    } else if (glyphName.equals("four")) {
+      return "4";
+    } else if (glyphName.equals("five")) {
+      return "5";
+    } else if (glyphName.equals("six")) {
+      return "6";
+    } else if (glyphName.equals("seven")) {
+      return "7";
+    } else if (glyphName.equals("eight")) {
+      return "8";
+    } else if (glyphName.equals("nine")) {
+      return "9";
+    } else if (glyphName.equals("semicolon")) {
+      return ";";
+    } else if (glyphName.equals("less")) {
+      return "<";
+    } else if (glyphName.equals("greater")) {
+      return ">";
+    } else if (glyphName.equals("question")) {
+      return "?";
+    } else if (glyphName.equals("at")) {
+      return "@";
+    } else if (glyphName.equals("bracketleft")) {
+      return "[";
+    } else if (glyphName.equals("bracketright")) {
+      return "]";
+    } else if (glyphName.equals("backslash")) {
+      return "\\\\";
+    } else if (glyphName.equals("asciicircum")) {
+      return "^";
+    } else if (glyphName.equals("underscore")) {
+      return "_";
+    } else if (glyphName.equals("grave")) {
+      return "`";
+    } else if (glyphName.equals("bar")) {
+      return "|";
+    } else {
+      return glyphName;
+    }
+    
   }
 
   static private ArrayList<String> extractSVGPath(String glyph) {
