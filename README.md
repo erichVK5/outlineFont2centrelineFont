@@ -66,7 +66,7 @@ Other useful flags:
 
 -w manually specify limbwidth for centreline path offsets
 
--ep Y  export polygons only (experimental), with Y offset (typically value 6333 to 7000)
+-ep Y  export polygons only (experimental), with Y offset (typically value 6333 to 8500)
 
 For example:
 
@@ -103,6 +103,10 @@ This becomes the set of line descriptions for the centreline defined glyph.
 It is at this point that the footprint needs to be converted to a gEDA PCB compatible font symbol.....
 
 To be continued...
+
+Already converted fonts can be found at the EDA toolchain agnostic repository for footprints, symbols, fonts ad anything else EDA related:
+
+http://repo.hu/projects/edakrill/
 
 TODO:
 
