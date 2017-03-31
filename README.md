@@ -9,7 +9,7 @@ The workflow is a work in progress, and this README is more of an aid to remembe
 Nevertheless, the code is now at the point where it can simplfy the job of converting outline defined glyphs to centreline defined glyphs, for use in PCB, or other plotter, eggbot, engraving or similar activities.
 
 The code can now generate a complete pcb-rnd compatible font file in lihata (.lht) format if asked to. The only things that have to be done manually (until more code is written) to the generated font file full of polygonal glyphs is
-- substituting the glyph names with standard ASCII chars, i.e. put '=' instead of "equals" and so forth.- also, braces "{", "}", colon ":" and tilde "~" need to be susbtituted with heax, i.e. x76 . Perusing the Klingon font file, for example, will give you the right idea.
+- substituting the glyph names with standard ASCII chars, i.e. put '=' instead of "equals" and so forth.- also, braces "{", "}", colon ":" and tilde "~" need to be susbtituted with hex, i.e. x76 . Perusing the Klingon font file, for example, will give you the right idea.
 - internal polygons need to be combined into external polygon paths. This needs to be automated, but the code is yet to be written. 
 
 The code was originally written with the single purpose of simplifying centreline defined (or stroked/engraving) font generation from existing truetype fonts, but the recent additional of polygon support within glyphs in the gEDA PCB fork pcb-rnd has led to additional code being added to quickly and easily generate font files with glyphs drawn with polygons.
@@ -19,6 +19,8 @@ As an aside, fonts which are sans serif and of uniform thickness are best suited
 Whether you're making a pcb-rnd font, or trying to make a stroked font compatible with gEDA PCB and pcb-rnd, the ttf2svg utility is needed. It's part of the apache Batik stuff.
 
 You then need a truetype font to play with. If it has cubic beziers, it will probably generate garbage, as the parsing has not been set up to deal with cubic beziers currently. Most truetype fonts simply have quadratic beziers. Postscript fonts have cubic beziers, apparently.
+
+The other issue which needs to be sorted out is coping with converted truetype fonts which have paths extending into negative X or negative Y coordinates. This seems to break the bezier conversion and produce garbage outline; TODO: some code to shift the paths into the positive 1st quadrant.
 
 You need to know the decimal designation of the unicode glyph or range of glyphs you want to convert, i.e. U+05D0 is 1488, and U+05F4 is 1524.
 
@@ -104,8 +106,18 @@ To be continued...
 
 TODO:
 
-sort out the occasional error with bezier segment stitching, which manifests as a join between bezier segments jumping to the origin (0,0).
+centreline code: 
 
-automatic censoring of overlaid paths from each side of the limb
+- sort out the occasional error with bezier segment stitching, which manifests as a join between bezier segments jumping to the origin (0,0).
 
-distinguishing between, and processing accordingly, glyphs with and without internal contours
+- automatic censoring of overlaid paths from each side of the limb
+
+- distinguishing between, and processing accordingly, glyphs with and without internal contours
+
+polygonal glyph export to pcb-rnd code:
+
+- coping with converted truetype fonts which have paths extending into negative X or negative Y coordinates. This is not common but will break the bezier conversion and produce garbage outlines; some code is needed to shift the paths into the positive 1st quadrant.
+
+- automatic replacement of glyph names, i.e. "semicolon" wth ';' in the exported lihata font file
+
+- automatic merging of inner and outer paths which are currently exported as separate polygons.
