@@ -8,9 +8,9 @@ The workflow is a work in progress, and this README is more of an aid to remembe
 
 Nevertheless, the code is now at the point where it can simplfy the job of converting outline defined glyphs to centreline defined glyphs, for use in PCB, or other plotter, eggbot, engraving or similar activities.
 
-The code can now generate a complete pcb-rnd compatible font file in lihata (.lht) format if asked to. The only things that have to be done manually (until more code is written) to the generated font file full of polygonal glyphs is
-- substituting the glyph names with standard ASCII chars, i.e. put '=' instead of "equals" and so forth.- also, braces "{", "}", colon ":" and tilde "~" need to be susbtituted with hex, i.e. x76 . Perusing the Klingon font file, for example, will give you the right idea.
-- internal polygons need to be combined into external polygon paths. This needs to be automated, but the code is yet to be written. 
+The code can now generate a complete pcb-rnd compatible font file in lihata (.lht) format if asked to. The only things that has to be done manually (until more code is written) to the generated font file full of polygonal glyphs is
+- internal polygons need to be combined into external polygon paths. This needs to be automated, but the code is yet to be written.
+- glyph names that are not standard ASCII chars, or their escaped equivalents, need to be mapped to an ASCII char
 
 The code was originally written with the single purpose of simplifying centreline defined (or stroked/engraving) font generation from existing truetype fonts, but the recent additional of polygon support within glyphs in the gEDA PCB fork pcb-rnd has led to additional code being added to quickly and easily generate font files with glyphs drawn with polygons.
 
@@ -121,7 +121,5 @@ centreline code:
 polygonal glyph export to pcb-rnd code:
 
 - coping with converted truetype fonts which have paths extending into negative X or negative Y coordinates. This is not common but will break the bezier conversion and produce garbage outlines; some code is needed to shift the paths into the positive 1st quadrant.
-
-- automatic replacement of glyph names, i.e. "semicolon" wth ';' in the exported lihata font file
 
 - automatic merging of inner and outer paths which are currently exported as separate polygons.
