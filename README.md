@@ -1,15 +1,24 @@
 # outlineFont2centrelineFont
-A utility to convert SVG fonts to centreline defined fonts for engraving or PCB/gerber use.
+A utility to 
+
+- convert SVG fonts to centreline defined fonts for engraving or PCB/gerber use.
+- convert SVG fonts to polygonal outlines for use in the gEDA PCB fork pcb-rnd's font files (.lht)
 
 The workflow is a work in progress, and this README is more of an aid to remembering what currently needs to be done than an actual howto for general use.
 
 Nevertheless, the code is now at the point where it can simplfy the job of converting outline defined glyphs to centreline defined glyphs, for use in PCB, or other plotter, eggbot, engraving or similar activities.
 
-As an aside, fonts which are sans serif and of uniform thickness are best suited to conversion to centreline defined fonts. Those which have complex, tapering, or very skinny serifs will be difficult to convert effectively.
+The code can now generate a complete pcb-rnd compatible font file in lihata (.lht) format if asked to. The only things that have to be done manually to the generated font file full of polygonal glyphs is
+- subsituting the glyph names with standard ASCII chars, i.e. put '=' instead of "equals" and so forth.- also, braces "{", "}", colon ":" and tilde "~" need to be susbtituted with heax, i.e. x76 . Perusing the Klingon font file, for example, will give you the right idea.
+- internal polygons need to be combined into external polygon paths. This needs to be automated, but the code is yet to be written. 
 
-First of all, the ttf2svg utility is needed. It's part of the apache Batik stuff.
+The code was orinally written with the single purpose of simplifying centreline defined (or stroked/engraving) font generation from existing truetype fonts, but the recent additional of polygon support within glyphs in the gEDA PCB fork pcb-rnd has led to additional code being added to quickly and easily generate font files with glyphs drawn with polygons.
 
-You then need a truetype font to play with. If it has cubic beziers, it will probably generate garbage, as the parsing has not been set up to deal with cubic beziers currently. Most truetype fonts simply have quadratic beziers. 
+As an aside, fonts which are sans serif and of uniform thickness are best suited to conversion to centreline defined fonts. Those which have complex, tapering, or very skinny serifs will be difficult to convert effectively to a stroked or centreline font.
+
+Whether you're making a pcb-rnd font, or trying to make a stroked font compatible with gEDA PCB and pcb-rnd, the ttf2svg utility is needed. It's part of the apache Batik stuff.
+
+You then need a truetype font to play with. If it has cubic beziers, it will probably generate garbage, as the parsing has not been set up to deal with cubic beziers currently. Most truetype fonts simply have quadratic beziers. Postscript fonts have cubic beziers, apparently.
 
 You need to know the decimal designation of the unicode glyph or range of glyphs you want to convert, i.e. U+05D0 is 1488, and U+05F4 is 1524.
 
@@ -17,7 +26,7 @@ To extract the glyphs ranging from U+05D0 to U+05F4 inclusive from your truetype
 
 	ttf2svg MiriamCLM-Book.ttf -l 1488 -h 1524 -o thing.svg	
 
-You want a reasonable number of glyphs in your extract, so that the code can reliably determine the limb widths of the font glyphs, meaning you do not need to figure out by trial and error plus specify it manually.
+You want a reasonable number of glyphs in your extract, so that the code can reliably determine the limb widths of the font glyphs if you are trying to make a centreline defined glyph, meaning you do not need to figure out by trial and error plus specify it manually.
 
 If you then view thing.svg in a text editor, you'll see a set of paths defined, such as
 
@@ -58,6 +67,16 @@ Other useful flags:
 -ep Y  export polygons only (experimental), with Y offset (typically value 6333 to 7000)
 
 For example:
+
+to generate a lihata (.lht) font file for use in pcb-rnd
+
+java OutlineFont2centrelineFont -ep 8500 -s KLINGON.svg -f 1 -l 76
+
+which will create a file KLINGON.svgFont.lht containing 76 glyphs drawn with polygons defined by the trutype font paths. Until additional code is written, minor hand editing is required to merge polygonal paths (taking care to make them non intersecting), and name the glyphs with standard ASCII chars.
+
+another example:
+
+This command is used to geenrate a footprint from a trutype glyph to alow further editing, and then ultmately, a centreline defined glyph to be generated...
 
 java OutlineFont2centrelineFont -se -ssv -sf -ss -op -cl -s thing1.svg -g 1
 
