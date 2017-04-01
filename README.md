@@ -4,7 +4,7 @@ A utility to
 - convert SVG fonts to centreline defined fonts for engraving or PCB/gerber use.
 - convert SVG fonts to polygonal outlines for use in the gEDA PCB fork pcb-rnd's font files (.lht)
 
-The code was originally written with the single purpose of simplifying centreline defined (aka stroked/engraving) font generation from existing truetype fonts, but the recent additional of polygon support within glyphs in the gEDA PCB fork pcb-rnd has led to additional code being added to quickly and easily generate font files with glyphs drawn with polygons.
+The code was originally written with the single purpose of simplifying centreline defined (aka stroked/engraving) font generation from existing truetype fonts, but the recent addition of polygon support within glyphs in the gEDA PCB fork pcb-rnd has led to additional code being added to quickly and easily generate font files with glyphs drawn with polygons. This is now a very quick way to add custom fonts to PCB layouts, if using pcb-rnd:   http://repo.hu/projects/pcb-rnd/
 
 The code is now at the point where it can simplfy the job of converting outline defined glyphs to centreline defined glyphs, for use in PCB, or other plotter, eggbot, engraving or similar activities, but the workflow is still a bit of a work in progress for centreline/stroked/engraving font generation, so this README is more of an aid to remembering what currently needs to be done than an actual howto for general stroked font conversion.
 
