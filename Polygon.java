@@ -177,14 +177,24 @@ public class Polygon extends OutlineElement {
       return retPolygon;
     } else {
       String retPolygon = "";
+	// reduce resolution of extremely close vertices prone to self intersection
+	long threshold = 3000;
+	long lastX = 0;
+	long lastY = 0;
       for (int i = 0; i < (nVertices); i++) {
+
         long xCoord
             = (long)(pointList.get(i).getX()*magnification);
         long yCoord = (long)(yOffset-pointList.get(i).getY()*magnification); 
-        retPolygon = retPolygon
-            + "       "
-            + (xCoord - xOffset)/100.0 + "mil; "
-            + yCoord/100.0 + "mil\n";
+	if (i > 0
+              && ((xCoord - lastX)*(xCoord - lastX) + (yCoord - lastY)*(yCoord - lastY)) > threshold) {
+          retPolygon = retPolygon
+              + "       "
+              + (xCoord - xOffset)/100.0 + "mil; "
+              + yCoord/100.0 + "mil\n";
+	}
+	lastY = yCoord;
+	lastX = xCoord;
       }
       return retPolygon;
     }
