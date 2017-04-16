@@ -178,7 +178,7 @@ public class Polygon extends OutlineElement {
     } else {
       String retPolygon = "";
 	// reduce resolution of extremely close vertices prone to self intersection
-	long threshold = 3000;
+	long threshold = 0;
 	long lastX = 0;
 	long lastY = 0;
       for (int i = 0; i < (nVertices); i++) {
@@ -186,8 +186,8 @@ public class Polygon extends OutlineElement {
         long xCoord
             = (long)(pointList.get(i).getX()*magnification);
         long yCoord = (long)(yOffset-pointList.get(i).getY()*magnification); 
-	if (i > 0
-              && ((xCoord - lastX)*(xCoord - lastX) + (yCoord - lastY)*(yCoord - lastY)) > threshold) {
+	if ((i == 0) || (i > 0
+              && ((xCoord - lastX)*(xCoord - lastX) + (yCoord - lastY)*(yCoord - lastY)) > threshold)) {
           retPolygon = retPolygon
               + "       "
               + (xCoord - xOffset)/100.0 + "mil; "

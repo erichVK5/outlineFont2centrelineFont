@@ -583,13 +583,13 @@ public class OutlineFont2centrelineFont {
 	fpName = fpName + ".fp";
       }
       
-      File out = new File(fpName);
+      System.out.println("Footprint name: " + fpName);
       
-      PrintWriter fp = new PrintWriter(out);
+      /*PrintWriter fp = new PrintWriter(out);
 
       fp.println(finalOutput);
       //    fp.println(output);
-      fp.close();
+      fp.close();*/
       
       System.out.println("Glyph ascent and descent:"
                          + theGlyph.ascent() + ", "

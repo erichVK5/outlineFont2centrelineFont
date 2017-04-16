@@ -138,9 +138,32 @@ public class OutlineFont {
     int index = glyph.indexOf("unicode=\"&#x"); 
     String temp = "";
     if (index == -1) {
-      index = glyph.indexOf("glyph-name=\""); // osi font
-      temp = glyph.substring(index);
+      index = glyph.indexOf("unicode=\"");
+      if (index == -1) {
+        index = glyph.indexOf("glyph-name=\""); // osi font
+        temp = glyph.substring(index+11);
+      } else {
+        temp = glyph.substring(index+9);
+      }
       index = temp.indexOf("\" ");
+      System.out.println("Glyph unicode name:" + temp);
+      temp = temp.substring(0,index);
+      if (temp.equals("\\")) {
+	temp  = "backslash";
+      } else if (temp.equals("&")) {
+        temp  = "ampersand";
+      } else if (temp.equals(":")) {
+        temp  = "colon";
+      } else if (temp.equals("~")) {
+        temp = "tilde";
+      } else if (temp.equals("{")) {
+        temp = "leftbrace";
+      } else if (temp.equals("}")) {
+        temp = "rightbrace";
+      } else if (temp.equals("/")) {
+        temp = "slash";
+      }
+      return temp;
     } else {
       temp = " " + glyph.substring(index); // miriam font
       index = temp.indexOf(";\" ");
